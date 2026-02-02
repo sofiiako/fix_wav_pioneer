@@ -514,8 +514,8 @@ Examples:
   # Fix a single file with custom output name
   python fix_wavs_for_pioneer.py input.wav -o output_fixed.wav
 
-  # Fix a single file with custom output name (long form)
-  python fix_wavs_for_pioneer.py input.wav --output output_fixed.wav
+  # Fix a single file in place (overwrites original)
+  python fix_wavs_for_pioneer.py input.wav --in-place
 
   # Fix directory and save to output directory
   python fix_wavs_for_pioneer.py /path/to/wavs --output-dir /path/to/fixed_wavs
@@ -577,28 +577,43 @@ Examples:
     # Validate arguments based on mode
     if is_single_file:
         # Single file mode
-        if not args.output:
-            parser.error("When processing a single file, --output (-o) must be specified")
-        if args.in_place:
-            parser.error("Cannot use --in-place with single file mode, use --output instead")
+        if not args.output and not args.in_place:
+            parser.error("When processing a single file, either --output (-o) or --in-place must be specified")
+        if args.in_place and args.output:
+            parser.error("Cannot use both --in-place and --output for a single file")
         if args.output_dir:
             parser.error("Cannot use --output-dir with single file mode, use --output instead")
-
-        output_path = Path(args.output).resolve()
-
-        # Prevent overwriting input file
-        if output_path == input_path:
-            parser.error("Output file cannot be the same as input file. Use --in-place for directory mode if you want to overwrite.")
 
         # Process single file
         logger.info("=" * 60)
         logger.info("WAV File Fixer for Pioneer DJ Players")
         logger.info("=" * 60)
         logger.info(f"Input file: {input_path}")
-        logger.info(f"Output file: {output_path}")
-        logger.info("=" * 60)
 
-        success = fix_wav_file(input_path, output_path)
+        if args.in_place:
+            logger.info("Mode: In-place (will overwrite original)")
+            logger.info("=" * 60)
+
+            # Create a temporary file, then replace original
+            temp_output = input_path.with_suffix('.wav.tmp')
+            success = fix_wav_file(input_path, temp_output)
+
+            if success:
+                temp_output.replace(input_path)
+            else:
+                if temp_output.exists():
+                    temp_output.unlink()
+        else:
+            output_path = Path(args.output).resolve()
+
+            # Prevent overwriting input file
+            if output_path == input_path:
+                parser.error("Output file cannot be the same as input file. Use --in-place if you want to overwrite.")
+
+            logger.info(f"Output file: {output_path}")
+            logger.info("=" * 60)
+
+            success = fix_wav_file(input_path, output_path)
 
         logger.info("=" * 60)
         if success:

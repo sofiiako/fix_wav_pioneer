@@ -25,4 +25,25 @@ A Python script that fixes WAV files to ensure reliable playback on Pioneer DJ h
 - Python 3.7 or higher
 - pip package manager
 
-### Install Dependencies
+### Examples
+
+
+  **Fix a single file with custom output name**:
+
+  `python fix_wavs_for_pioneer.py input.wav -o output_fixed.wav`
+
+  **Fix a single file in place (overwrites original)**:
+
+  `python fix_wavs_for_pioneer.py input.wav --in-place`
+
+  **Fix directory and save to output directory**:
+
+  `python fix_wavs_for_pioneer.py /path/to/wavs --output-dir /path/to/fixed_wavs`
+
+  **Fix directory files in place (overwrites originals)**:
+
+  `python fix_wavs_for_pioneer.py /path/to/wavs --in-place`
+
+  **Enable verbose logging**:
+
+  `python fix_wavs_for_pioneer.py /path/to/wavs --output-dir /path/to/fixed_wavs -v`
